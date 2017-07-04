@@ -1,6 +1,6 @@
 {
   "name": "poet-feed-consumer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "dist/FeedConsumer.js",
   "types": "dist/FeedConsumer.d.ts",
