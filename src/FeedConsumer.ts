@@ -3,6 +3,7 @@ declare var require: any
 import { promisify } from 'util'
 import * as fetch from 'isomorphic-fetch'
 import * as xml2js from 'xml2js'
+import * as moment from 'moment'
 import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex } from 'poet-js'
 const bitcore = require('bitcore-lib')
 
@@ -49,6 +50,8 @@ export class FeedConsumer {
 
   public async consume() {
     console.log('Running Poet Feed Consumer')
+    console.log()
+    console.log(moment().format('YYYY MMMM Do, hh:mm:ss a'))
     console.log()
     console.log('Feed URL:', this.feedUrl)
     console.log('Poet Explorer URL:', this.poetUrl)
