@@ -100,8 +100,12 @@ export class FeedConsumer {
     console.log()
     console.log('Submitting articles...')
 
-    // console.log(newArticles)
+    console.log()
 
+    for (const article of newArticles)
+      console.log(article.link || article.name)
+
+    console.log()
     const submitedArticles = (await this.submitArticles(newArticles)) as any
     console.log('Articles submitted.')
     console.log()
