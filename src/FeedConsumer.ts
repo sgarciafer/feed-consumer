@@ -49,7 +49,7 @@ export class FeedConsumer {
   }
 
   public async consume() {
-    console.log('Running Poet Feed Consumer')
+    console.log('Running Poet Feed Consumer for ' + this.profile.displayName)
     console.log()
     console.log(moment().format('YYYY MMMM Do, hh:mm:ss a'))
     console.log()
@@ -87,7 +87,14 @@ export class FeedConsumer {
   }
 
   private async scanFeedEntries(): Promise<any> {
-    const feed =  await fetch(this.feedUrl).then(_ => _.text())
+    const feed =  await fetch(this.feedUrl)
+      .then(_ => _.text())
+      .catch(err => {
+        console.log('An error occurred when fetching the feeds.')
+        console.error(err);
+        return;
+      })
+
     const parsedFeed = await parseString(feed, { strict: false })
     const feedEntries = await this.getFeedEntries(parsedFeed)
     console.log(`The feed has ${feedEntries.length} articles.`)
@@ -102,18 +109,17 @@ export class FeedConsumer {
     console.log(`Found ${newArticles.length} new articles.`)
     console.log()
     console.log('Submitting articles...')
-
     console.log()
 
     for (const article of newArticles)
       console.log(article.link || article.name)
 
     console.log()
-    const submitedArticles = (await this.submitArticles(newArticles)) as any
+    const submittedArticles = (await this.submitArticles(newArticles)) as any
     console.log('Articles submitted.')
     console.log()
     console.log('Submitting licenses...')
-    const submitedLicenses = await this.submitLicenses(submitedArticles)
+    await this.submitLicenses(submittedArticles)
     console.log('Licenses submitted.')
     console.log()
   }
