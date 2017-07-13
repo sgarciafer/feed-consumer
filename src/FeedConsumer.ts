@@ -120,7 +120,7 @@ export class FeedConsumer {
     console.log('Articles submitted.')
     console.log()
 
-    child_process.execSync("sleep 2");
+    child_process.execSync("sleep 2")
 
     console.log('Submitting licenses')
 
