@@ -223,6 +223,10 @@ export class FeedConsumer {
 
     const json = await result.json()
 
+    if (!json.createdClaims) {
+      throw new Error('Unexpected Po.et API response: ' + JSON.stringify(json, null, 2))
+    }
+
     return json.createdClaims.filter((e: any) => e.type === 'Work')
 
   }
