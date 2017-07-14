@@ -1,12 +1,13 @@
 declare var require: any
 
 import { promisify } from 'util'
+import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex } from 'poet-js'
+import * as child_process from 'child_process'
 import * as fetch from 'isomorphic-fetch'
 import * as xml2js from 'xml2js'
 import * as moment from 'moment'
-import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex } from 'poet-js'
-const bitcore = require('bitcore-lib')
 
+const bitcore = require('bitcore-lib')
 const parseString = promisify(xml2js.parseString)
 
 export type FeedEntries = (parsedFeed: any) => any
@@ -57,11 +58,15 @@ export class FeedConsumer {
     console.log('Feed URL:', this.feedUrl)
     console.log('Feed Public Key:', this.feedPublicKey)
     console.log()
+
+    child_process.execSync("sleep 2")
+
     console.log('Posting Profile...')
     await this.postProfile()
     console.log('Profile posted.')
     console.log()
     console.log('Scanning Feed...')
+
     try {
       await this.scanFeedEntries()
     } catch (err) {
@@ -87,12 +92,12 @@ export class FeedConsumer {
   }
 
   private async scanFeedEntries(): Promise<any> {
-    const feed =  await fetch(this.feedUrl)
+    const feed = await fetch(this.feedUrl)
       .then(_ => _.text())
       .catch(err => {
         console.log('An error occurred when fetching the feeds.')
         console.error(err);
-        return;
+        throw new Error('An error occurred when fetching the feeds')
       })
 
     const parsedFeed = await parseString(feed, { strict: false })
@@ -108,6 +113,9 @@ export class FeedConsumer {
 
     console.log(`Found ${newArticles.length} new articles.`)
     console.log()
+
+    child_process.execSync("sleep 2")
+
     console.log('Submitting articles...')
     console.log()
 
@@ -118,8 +126,18 @@ export class FeedConsumer {
     const submittedArticles = (await this.submitArticles(newArticles)) as any
     console.log('Articles submitted.')
     console.log()
-    console.log('Submitting licenses...')
-    await this.submitLicenses(submittedArticles)
+
+    child_process.execSync("sleep 2")
+
+    console.log('Submitting licenses')
+
+    try {
+      await this.submitLicenses(submittedArticles)
+    } catch (err) {
+      console.error('Uncaught error submitting licenses', err, err.stack)
+      throw new Error('Unexpected error submitting licenses')
+    }
+
     console.log('Licenses submitted.')
     console.log()
   }
@@ -202,10 +220,13 @@ export class FeedConsumer {
         signature: hex(signature)
       }
     })
+
+    console.debug('Starting submitLicenses.postClaims...')
     return await this.postClaims(signedClaims)
   }
 
   private async postClaims(claims: any) {
+    console.debug('Starting postClaims...')
     const result = await fetch(`${this.poetUrl}/user/claims`, {
       method: 'POST',
       headers: {
@@ -213,6 +234,7 @@ export class FeedConsumer {
       },
       body: JSON.stringify({ signatures: claims })
     })
+    console.debug('Finished postClaims...')
 
     if (!result.ok) {
       console.error('Error posting claims. Server responded:')
