@@ -58,11 +58,15 @@ export class FeedConsumer {
     console.log('Feed URL:', this.feedUrl)
     console.log('Feed Public Key:', this.feedPublicKey)
     console.log()
+
+    child_process.execSync("sleep 2")
+
     console.log('Posting Profile...')
     await this.postProfile()
     console.log('Profile posted.')
     console.log()
     console.log('Scanning Feed...')
+
     try {
       await this.scanFeedEntries()
     } catch (err) {
@@ -109,6 +113,9 @@ export class FeedConsumer {
 
     console.log(`Found ${newArticles.length} new articles.`)
     console.log()
+
+    child_process.execSync("sleep 2")
+
     console.log('Submitting articles...')
     console.log()
 
