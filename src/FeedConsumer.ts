@@ -1,8 +1,7 @@
 declare var require: any
 
-import { promisify } from 'util'
-import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex } from 'poet-js'
-import * as child_process from 'child_process'
+import { isNumber, promisify } from 'util'
+import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex, delay } from 'poet-js'
 import * as fetch from 'isomorphic-fetch'
 import * as xml2js from 'xml2js'
 import * as moment from 'moment'
@@ -15,6 +14,7 @@ export type FeedEntries = (parsedFeed: any) => any
 export interface Feed {
   url: string
   privateKey: string
+  delay: DelayAttributes | number
   feedEntries: FeedEntries
   fields: FeedFields
   profile: ProfileAttributes
@@ -28,6 +28,12 @@ interface Article extends ClaimAttributes {
 
 }
 
+export interface DelayAttributes {
+  readonly beforeProfile: number;
+  readonly beforeWorks: number;
+  readonly beforeLicenses: number;
+}
+
 export class FeedConsumer {
   private readonly poetUrl: string
   private readonly feedUrl: string
@@ -35,6 +41,7 @@ export class FeedConsumer {
   private readonly feedPublicKey: string
   private readonly feedFields: FeedFields
   private readonly feedEntries: FeedEntries
+  private readonly delay: DelayAttributes | number;
   private readonly profile: ProfileAttributes
 
   constructor(poetUrl: string, configuration: Feed) {
@@ -44,6 +51,7 @@ export class FeedConsumer {
     this.feedFields = configuration.fields
     this.profile = configuration.profile
     this.feedPrivateKey = configuration.privateKey
+    this.delay = configuration.delay
 
     const feedPrivateKeyBitcore = bitcore.PrivateKey(configuration.privateKey)
     this.feedPublicKey = feedPrivateKeyBitcore.publicKey.toString()
@@ -59,7 +67,7 @@ export class FeedConsumer {
     console.log('Feed Public Key:', this.feedPublicKey)
     console.log()
 
-    child_process.execSync("sleep 2")
+    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeProfile)
 
     console.log('Posting Profile...')
     await this.postProfile()
@@ -114,7 +122,7 @@ export class FeedConsumer {
     console.log(`Found ${newArticles.length} new articles.`)
     console.log()
 
-    child_process.execSync("sleep 2")
+    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeWorks)
 
     console.log('Submitting articles...')
     console.log()
@@ -127,7 +135,7 @@ export class FeedConsumer {
     console.log('Articles submitted.')
     console.log()
 
-    child_process.execSync("sleep 2")
+    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeLicenses)
 
     console.log('Submitting licenses')
 
@@ -250,7 +258,5 @@ export class FeedConsumer {
     }
 
     return json.createdClaims.filter((e: any) => e.type === 'Work')
-
   }
-
 }
