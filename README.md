@@ -47,7 +47,9 @@ The url of the feed you want to import into Po.et
 ##### privateKey
 The private key used to sign the claims. The corresponding public key is the one that identifies your profile.
 
-Po.et's Feed Consumer uses [bitcore-lib](https://www.npmjs.com/package/bitcore-lib) `PrivateKey(privateKeyString).publicKey.toString()` to obtain the corresponding public key. 
+Po.et's Feed Consumer uses [bitcore-lib](https://www.npmjs.com/package/bitcore-lib) `PrivateKey(privateKeyString).publicKey.toString()` to obtain the corresponding public key.
+
+More on how to generate a private key later in this document. 
 
 ##### feedEntries
 A function that receives the parsed feed and returns either a node of the parsed xml tree or a promise that resolves to a node of the xml tree. This node must be an array of articles, also called feed entries.
@@ -78,3 +80,28 @@ Attributes for the profile that will own the published works from the feed.
 - `displayName` is usually a human name, organization name or pseudonym.
 
 
+### How to Generate a Private Key
+
+A private key is just a large integer number, but must be chosen carefully to be secure.
+ 
+One possible process to generate this value is:
+
+#### 12 Word Mnemonic
+
+We'll use Ian Coleman's app to do this. 
+
+- Visit https://iancoleman.github.io/bip39/
+- Choose `12` from the dropdown and click `Generate`
+- Select the `BTC - Bitcoin Testnet` in `Coin`
+- Copy the `BIP32 Root Key`. It should start with `tprv`
+
+#### Private Key
+
+We'll use Bitcore's HD Keys for this.
+
+- Go to https://bitcore.io/playground/#/hdkeys
+- Paste the BIP32 Root key in `Root HD Private Key`
+- Expand the  `Path: m` panel
+- The `Private Key` is what you're looking for
+
+For more information, WeTrust has published an excellent article on this topic: [Why Do I Need a Public and Private Key on the Blockchain?](https://blog.wetrust.io/why-do-i-need-a-public-and-private-key-on-the-blockchain-c2ea74a69e76).
