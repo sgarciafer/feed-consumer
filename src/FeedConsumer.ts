@@ -1,6 +1,6 @@
 declare var require: any
 
-import { isNumber, promisify } from 'util'
+import { promisify } from 'util'
 import { sign, ClaimBuilder, Claim, ClaimTypes, ClaimAttributes, ProfileAttributes, hex, delay } from 'poet-js'
 import * as fetch from 'isomorphic-fetch'
 import * as xml2js from 'xml2js'
@@ -29,9 +29,9 @@ interface Article extends ClaimAttributes {
 }
 
 export interface DelayAttributes {
-  readonly beforeProfile: number;
-  readonly beforeWorks: number;
-  readonly beforeLicenses: number;
+  readonly beforeProfile: number
+  readonly beforeWorks: number
+  readonly beforeLicenses: number
 }
 
 export class FeedConsumer {
@@ -41,7 +41,7 @@ export class FeedConsumer {
   private readonly feedPublicKey: string
   private readonly feedFields: FeedFields
   private readonly feedEntries: FeedEntries
-  private readonly delay: DelayAttributes | number;
+  private readonly delay: DelayAttributes
   private readonly profile: ProfileAttributes
 
   constructor(poetUrl: string, configuration: Feed) {
@@ -51,7 +51,13 @@ export class FeedConsumer {
     this.feedFields = configuration.fields
     this.profile = configuration.profile
     this.feedPrivateKey = configuration.privateKey
-    this.delay = configuration.delay
+    this.delay = typeof configuration.delay !== 'number'
+      ? configuration.delay
+      : {
+        beforeProfile: configuration.delay,
+        beforeWorks: configuration.delay,
+        beforeLicenses: configuration.delay,
+      }
 
     const feedPrivateKeyBitcore = bitcore.PrivateKey(configuration.privateKey)
     this.feedPublicKey = feedPrivateKeyBitcore.publicKey.toString()
@@ -67,7 +73,7 @@ export class FeedConsumer {
     console.log('Feed Public Key:', this.feedPublicKey)
     console.log()
 
-    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeProfile)
+    await delay(this.delay.beforeProfile)
 
     console.log('Posting Profile...')
     await this.postProfile()
@@ -122,7 +128,7 @@ export class FeedConsumer {
     console.log(`Found ${newArticles.length} new articles.`)
     console.log()
 
-    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeWorks)
+    await delay(this.delay.beforeWorks)
 
     console.log('Submitting articles...')
     console.log()
@@ -135,7 +141,7 @@ export class FeedConsumer {
     console.log('Articles submitted.')
     console.log()
 
-    await delay(isNumber(this.delay) ? this.delay : this.delay.beforeLicenses)
+    await delay(this.delay.beforeLicenses)
 
     console.log('Submitting licenses')
 
