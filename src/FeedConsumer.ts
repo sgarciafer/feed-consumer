@@ -75,17 +75,22 @@ export class FeedConsumer {
 
     await delay(this.delay.beforeProfile)
 
-    console.log('Posting Profile...')
-    await this.postProfile()
-    console.log('Profile posted.')
-    console.log()
-    console.log('Scanning Feed...')
-
     try {
+      console.log('Posting Profile...')
+      await this.postProfile()
+      console.log('Profile posted.')
+      console.log()
+      console.log('Scanning Feed...')
+
       await this.scanFeedEntries()
+
     } catch (err) {
-      console.error('Uncaught error scanning feed', err, err.stack)
+      console.error('Uncaught error', err, err.stack)
+      console.log()
+      console.log("Aborting processing for the current feed")
+      console.log()
     }
+
     console.log('Finished.')
     console.log()
   }
@@ -144,14 +149,7 @@ export class FeedConsumer {
     await delay(this.delay.beforeLicenses)
 
     console.log('Submitting licenses')
-
-    try {
-      await this.submitLicenses(submittedArticles)
-    } catch (err) {
-      console.error('Uncaught error submitting licenses', err, err.stack)
-      throw new Error('Unexpected error submitting licenses')
-    }
-
+    await this.submitLicenses(submittedArticles)
     console.log('Licenses submitted.')
     console.log()
   }
@@ -240,7 +238,6 @@ export class FeedConsumer {
   }
 
   private async postClaims(claims: any) {
-    console.debug('Starting postClaims...')
     const result = await fetch(`${this.poetUrl}/user/claims`, {
       method: 'POST',
       headers: {
@@ -248,13 +245,9 @@ export class FeedConsumer {
       },
       body: JSON.stringify({ signatures: claims })
     })
-    console.debug('Finished postClaims...')
 
     if (!result.ok) {
-      console.error('Error posting claims. Server responded:')
-      console.error(await result.text())
-      // TODO: this won't stop the rest of the script from running! Need to throw new ServerError(await result.text)) instead
-      return
+      throw new Error(await result.text())
     }
 
     const json = await result.json()
